@@ -186,16 +186,28 @@ class Commands():
             secret_key = Commands.TwoFactor.create_secret_key()
             print(f"Your secrect key is {secret_key}")
             if Commands.TwoFactor.verify_key_create(secret_key):
-                email_hash = Commands.Hashing.hashing_string(email)
-                phone_number_hash = Commands.Hashing.hashing_string(phone_number)
                 password_hash = Commands.Hashing.hashing_string(password)
                 self.open_db_connection()
-                self.add_users(f_name, l_name, age, email_hash, phone_number_hash, password_hash, secret_key)
+                self.add_users(f_name, l_name, age, email, phone_number, password_hash, secret_key)
+                user_id = self.return_user_id(email, password)
+                self.user_id = user_id
                 self.dashboard_page()
 
             else:
                 print("Invalid OPT")
                 self.landing_page()
+
+
+
+
+
+
+
+
+
+
+
+
 
         def login_account_page(self):
             print("")
@@ -362,12 +374,14 @@ class Commands():
                 selection = input("Confirm (yes/y) or (no/n): ")
                 value = Commands.Verification.validate_selection(selection)
                 if value == True:
+                    self.add_session(date_time, amount, self.user_id)
                     self.dashboard_page()
                 elif value == False:
                     self.dashboard_page()
                 print("")
                 print("")
                 print("Invalid Selection")
+
 
         def view_sessions(self):
             all_sessions = self.return_all_users_sessions()
@@ -388,7 +402,7 @@ class Commands():
                 session = [row[1], row[2]]
                 formated_sessions.append(session)
 
-            print(tabulate([formated_sessions], headers=['Date & Time', 'Group Size'], tablefmt='orgtbl'))
+            print(tabulate(formated_sessions, headers=['Date & Time', 'Group Size'], tablefmt='orgtbl'))
 
 
         def open_db_connection(self):
@@ -424,8 +438,8 @@ class Commands():
                     FirstName nvarchar(30),
                     LastName nvarchar(30),
                     Age tinyint,
-                    EmailHash nvarchar(250),
-                    PhoneNumHash nvarchar(250),
+                    Email nvarchar(50),
+                    PhoneNum nvarchar(13),
                     PasswordHash nvarchar(250),
                     SecretKeyHash nvarchar(250),
                     );
@@ -450,11 +464,20 @@ class Commands():
             """, (self.user_id))
             return self.cursor.fetchall()
         
-        def add_users(self, fname, lname, age, email_hash, phone_num_hash, password_hash, secret_key):
+        def add_session(self, date_time, group_amount, user_id):
             self.cursor.execute("""
-            INSERT INTO Users (FirstName, LastName, Age, EmailHash, PhoneNumHash, PasswordHash, SecretKeyHash)
+            INSERT INTO Sessions (DateTime, GroupAmount, User)
+            VALUES (?, ?, ?)
+            """, (date_time, group_amount, user_id))
+            self.cursor.commit()
+
+
+        
+        def add_users(self, fname, lname, age, email, phone_num, password_hash, secret_key):
+            self.cursor.execute("""
+            INSERT INTO Users (FirstName, LastName, Age, Email, PhoneNum, PasswordHash, SecretKeyHash)
             VALUES (?, ?, ?, ?, ?, ?, ?)
-            """, (fname, lname, age, email_hash, phone_num_hash, password_hash, secret_key))
+            """, (fname, lname, age, email, phone_num, password_hash, secret_key))
             self.cursor.commit()
             self.AdminDisplayAllInUsers()
 
@@ -584,7 +607,7 @@ class Commands():
             year = int(date_list[0] )
             hours = int(time_list[0] )
             minutes = int(time_list[1] )
-            return datetime.datetime(year, month, day, hours, minutes)
+            return datetime.datetime(year, month, day, hours, minutes, 0)
              
 
     class TwoFactor:

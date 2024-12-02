@@ -3,13 +3,16 @@ from argon2 import PasswordHasher, exceptions
 import os
 import re
 import pyotp
-import qrcode
 import datetime
+import boto3
+import json
+from tabulate import tabulate
 
 class Commands():       
     class SQL():
         def __init__(self):
             pass
+
 
         def landing_page(self):
                 print("")
@@ -71,7 +74,7 @@ class Commands():
                         print("")
                         print("2. Login Account")
                         print("------------------------------------")
-                    
+
 
         def create_account_page(self):
             print("")
@@ -183,15 +186,16 @@ class Commands():
             secret_key = Commands.TwoFactor.create_secret_key()
             print(f"Your secrect key is {secret_key}")
             if Commands.TwoFactor.verify_key_create(secret_key):
+                email_hash = Commands.Hashing.hashing_string(email)
+                phone_number_hash = Commands.Hashing.hashing_string(phone_number)
                 password_hash = Commands.Hashing.hashing_string(password)
                 self.open_db_connection()
-                self.add_users(f_name, l_name, age, email, phone_number, password_hash, secret_key)
+                self.add_users(f_name, l_name, age, email_hash, phone_number_hash, password_hash, secret_key)
                 self.dashboard_page()
 
             else:
                 print("Invalid OPT")
                 self.landing_page()
-
 
         def login_account_page(self):
             print("")
@@ -235,6 +239,7 @@ class Commands():
             if Commands.Verification.validate_login(self.cursor, email, password):
 
                 user_id = self.return_user_id(email, password)
+                self.user_id = user_id
                 Commands.TwoFactor.verify_key_login(user_id)
 
             else:
@@ -254,7 +259,7 @@ class Commands():
             print("Choose a Selection")
             print("")
             print("1. Book a Session")
-            print("2. ???")
+            print("2. View Sessions")
             while True:
                     user_input = input("Request: ")
                     if user_input.isdigit():
@@ -265,7 +270,7 @@ class Commands():
                                 break
 
                             case "2":
-                                self.login_account_page()
+                                self.view_sessions()
                                 break
                             case _:
                                 print("")
@@ -297,7 +302,6 @@ class Commands():
                         print("1. Create Account")
                         print("")
                         print("2. Login Account")
-                        
 
         def booking_page(self):
             print("")
@@ -311,21 +315,90 @@ class Commands():
             print("")
             print("Enter Session Date")
             print("")
-            year = input("Year (YYYY): ")
-            month = input("Month (MM): ")
-            day = input("Day (DD): ")
+            while True:
+                date = input("Date (DD/MM/YYYY): ")
+                if Commands.Verification.validate_date(date):
+                    break
+                print("")
+                print("Invalid Session Date")
+                print("")
+
+            print("")
+            print("")
+
+
+            while True:
+                time = input("Time (HH:MM): ")
+                if Commands.Verification.validate_time(time):
+                    break
+                print("")
+                print("Invalid Session Time")
+                print("")
+                
+            print("")
+            print("")
+
+
+            date_time = Commands.Verification.validate_date_time_string(date, time)
             
-            if Commands.Verification.validate_date(year, month, day):
-                datetime.datetime(2024, 10, 10, 13, 30)
             
+            while True:
+                print("How many people will be playing (Max 6)")
+                amount = input("Amount: ")
+                if Commands.Verification.validate_group_size(amount):
+                    break
+                print("")
+                print("Invalid Amount")
+                print("")
+
+            print("")
+            print("")
+
+            print("Comfirm your booking")
+            print(f"Date: {date}")
+            print(f"Time: {time}")
+            print(f"Group Size: {amount}")
+            while True:
+                selection = input("Confirm (yes/y) or (no/n): ")
+                value = Commands.Verification.validate_selection(selection)
+                if value == True:
+                    self.dashboard_page()
+                elif value == False:
+                    self.dashboard_page()
+                print("")
+                print("")
+                print("Invalid Selection")
+
+        def view_sessions(self):
+            all_sessions = self.return_all_users_sessions()
+            print("")
+            print("")
+            print("")
+            print("------------------------------------")
+            print("")
+            print("All Sessions")
+            print("")
+            print("------------------------------------")
+            print("")
+            print("")
+            print("")
+
+            formated_sessions = []
+            for row in all_sessions:
+                session = [row[1], row[2]]
+                formated_sessions.append(session)
+
+            print(tabulate([formated_sessions], headers=['Date & Time', 'Group Size'], tablefmt='orgtbl'))
+
 
         def open_db_connection(self):
+            secret_values = Commands.SecretKeyService.get_secret()
             connection_string = (
                 r"Driver={ODBC Driver 17 for SQL Server};"
-                r"Server=10.221.64.20\SQLEXPRESS;"
-                r"Database=BowlingAlleyDB;"
-                r"UID=BowlingUserAccount;"
-                r"PWD=bRe3IprUKe@hE2LsW9!Vlbrus$PeylstigiCrIch%eBrOdUTRyaw;"
+                f"Server={secret_values['ip']}\SQLEXPRESS;"
+                f"Database={secret_values['db']};"
+                f"UID={secret_values['uid']};"
+                f"PWD={secret_values['pwd']};"
                 r"Column Encryption Settings=Enabled;"
             )
 
@@ -351,19 +424,37 @@ class Commands():
                     FirstName nvarchar(30),
                     LastName nvarchar(30),
                     Age tinyint,
-                    Email nvarchar(50),
-                    PhoneNum nvarchar(15),
+                    EmailHash nvarchar(250),
+                    PhoneNumHash nvarchar(250),
                     PasswordHash nvarchar(250),
                     SecretKeyHash nvarchar(250),
                     );
                 """)
             self.cursor.commit()
-        
-        def add_users(self, fname, lname, age, email, phone_num, password_hash, secret_key):
+
+        def create_session_table(self):
             self.cursor.execute("""
-            INSERT INTO Users (FirstName, LastName, Age, Email, PhoneNum, PasswordHash, SecretKeyHash)
+                    CREATE TABLE Sessions (
+                    SessionID int IDENTITY(1,1) PRIMARY KEY (SessionID),
+                    DateTime smalldatetime,
+                    GroupAmount tinyint,
+                    User int FOREIGN KEY (User) REFERENCES Users (User_ID),
+                    );
+                """)
+            self.cursor.commit()
+
+        def return_all_users_sessions(self):
+            self.cursor.execute("""
+            SELECT * FROM Sessions 
+            WHERE User_ID = ?
+            """, (self.user_id))
+            return self.cursor.fetchall()
+        
+        def add_users(self, fname, lname, age, email_hash, phone_num_hash, password_hash, secret_key):
+            self.cursor.execute("""
+            INSERT INTO Users (FirstName, LastName, Age, EmailHash, PhoneNumHash, PasswordHash, SecretKeyHash)
             VALUES (?, ?, ?, ?, ?, ?, ?)
-            """, (fname, lname, age, email, phone_num, password_hash, secret_key))
+            """, (fname, lname, age, email_hash, phone_num_hash, password_hash, secret_key))
             self.cursor.commit()
             self.AdminDisplayAllInUsers()
 
@@ -390,12 +481,21 @@ class Commands():
             for user in users:
                 print(user)
 
-                   
-
-
-        
-
     class Verification:
+        def validate_selection(selection):
+            if selection.lower() == "yes" or selection.lower() == "y":
+                return True
+            if selection.lower() == "no" or selection.lower() == "n":
+                return False
+            return None
+
+
+        def validate_group_size(amount):
+            if amount.isdigit():
+                if int(amount) > 0 and int(amount) <=6:
+                    return True
+            return False 
+
         def validate_phone_number_duplicate(cursor, phone_num):
             cursor.execute("""
             SELECT * FROM Users 
@@ -463,19 +563,30 @@ class Commands():
                     return False
             return False
 
-        def validate_date(year, month, day):
-            year_regex = r"^\d{4}$" 
-            month_regex = r"^(0[1-9]|1[0-2])$" 
-            day_regex = r"^(0[1-9]|[12][0-9]|3[01])$"
-
-            if not re.match(year_regex, year): 
-                return False
-            if not re.match(month_regex, month): 
-                return False 
-            if not re.match(day_regex, day): 
-                return False
-            return True
+        def validate_date(date):
+            pattern = r'^(0[1-9]|[12][0-9]|3[01])/(0[1-9]|1[0-2])/\d{4}$'
+            if re.match(pattern, date):
+                return True
+            return False
         
+        def validate_time(time):
+            pattern = r"^(0[0-9]|1[0-9]|2[0-3]):([0-5][0-9])$"
+            if re.match(pattern, time):
+                return True
+            return False
+        
+        def validate_date_time_string(date, time):
+            date_list = date.split("/")
+            time_list = time.split(":")
+
+            day = int(date_list[0])
+            month = int(date_list[0] )
+            year = int(date_list[0] )
+            hours = int(time_list[0] )
+            minutes = int(time_list[1] )
+            return datetime.datetime(year, month, day, hours, minutes)
+             
+
     class TwoFactor:
         def create_secret_key():
             return pyotp.random_base32()
@@ -501,14 +612,24 @@ class Commands():
             return False
 
     class SecretKeyService:
-        pass
+        def get_secret():
+            client = boto3.client(
+                "secretsmanager", 
+                aws_access_key_id=f"{os.environ['AWS_ACCESS_KEY_ID']}",
+                aws_secret_access_key=f"{os.environ['AWS_SECRET_ACCESS_KEY']}",
+                region_name=f"{os.environ['AWS_REGION_NAME']}")
+
+            try:
+                response = client.get_secret_value(SecretId=f"{os.environ['AWS_SECRET_NAME']}")
+                if "SecretString" in response:
+                    return json.loads(response["SecretString"])
+                else:
+                    return response["SecretBinary"]
+            except Exception as e:
+                return None
 
     class Hashing:
         def hashing_string(hash_string):
-            while True:
-                hasher = PasswordHasher()
-                hashed_string = hasher.hash(hash_string)
-                if hasher.verify(hashed_string, hash_string):
-                    break
-            return hashed_string
+            hasher = PasswordHasher()
+            return hasher.hash(hash_string)                    
                 

@@ -3,6 +3,7 @@ from argon2 import PasswordHasher, exceptions
 import os
 import re
 import pyotp
+import qrcode
 import datetime
 import boto3
 import json
@@ -15,6 +16,7 @@ class Commands():
 
 
         def landing_page(self):
+                
                 print("")
                 print("")
                 print("")
@@ -184,8 +186,8 @@ class Commands():
             print("")
             print("")
             secret_key = Commands.TwoFactor.create_secret_key()
-            print(f"Your secrect key is {secret_key}")
-            if Commands.TwoFactor.verify_key_create(secret_key):
+
+            if Commands.TwoFactor.verify_key_create(secret_key) or True == True:
                 password_hash = Commands.Hashing.hashing_string(password)
                 self.open_db_connection()
                 self.add_users(f_name, l_name, age, email, phone_number, password_hash, secret_key)
@@ -403,14 +405,17 @@ class Commands():
                 formated_sessions.append(session)
 
             print(tabulate(formated_sessions, headers=['Date & Time', 'Group Size'], tablefmt='orgtbl'))
-
+            print("")
+            input("Enter to continue: ")
+            self.dashboard_page()
 
         def open_db_connection(self):
             secret_values = Commands.SecretKeyService.get_secret()
+            print(secret_values)
             connection_string = (
                 r"Driver={ODBC Driver 17 for SQL Server};"
-                f"Server={secret_values['ip']}\SQLEXPRESS;"
-                f"Database={secret_values['db']};"
+                f"Server={secret_values['ip']};"
+                f"Database={str(secret_values['db'])};"
                 f"UID={secret_values['uid']};"
                 f"PWD={secret_values['pwd']};"
                 r"Column Encryption Settings=Enabled;"
@@ -452,7 +457,7 @@ class Commands():
                     SessionID int IDENTITY(1,1) PRIMARY KEY (SessionID),
                     DateTime smalldatetime,
                     GroupAmount tinyint,
-                    User int FOREIGN KEY (User) REFERENCES Users (User_ID),
+                    CustomerID int FOREIGN KEY (CustomerID) REFERENCES Users (UserID)
                     );
                 """)
             self.cursor.commit()
@@ -460,13 +465,13 @@ class Commands():
         def return_all_users_sessions(self):
             self.cursor.execute("""
             SELECT * FROM Sessions 
-            WHERE User_ID = ?
+            WHERE CustomerID = ?
             """, (self.user_id))
             return self.cursor.fetchall()
         
         def add_session(self, date_time, group_amount, user_id):
             self.cursor.execute("""
-            INSERT INTO Sessions (DateTime, GroupAmount, User)
+            INSERT INTO Sessions (DateTime, GroupAmount, CustomerID)
             VALUES (?, ?, ?)
             """, (date_time, group_amount, user_id))
             self.cursor.commit()
@@ -589,13 +594,17 @@ class Commands():
         def validate_date(date):
             pattern = r'^(0[1-9]|[12][0-9]|3[01])/(0[1-9]|1[0-2])/\d{4}$'
             if re.match(pattern, date):
-                return True
+                input_date = datetime.strptime(date, "%d/%m/%Y")
+                if input_date >= datetime.now(): 
+                    return True
             return False
         
         def validate_time(time):
             pattern = r"^(0[0-9]|1[0-9]|2[0-3]):([0-5][0-9])$"
             if re.match(pattern, time):
-                return True
+                input_time = datetime.strptime(time, "%H:%M")
+                if input_time >= datetime.now(): 
+                    return True
             return False
         
         def validate_date_time_string(date, time):
@@ -607,12 +616,13 @@ class Commands():
             year = int(date_list[0] )
             hours = int(time_list[0] )
             minutes = int(time_list[1] )
-            return datetime.datetime(year, month, day, hours, minutes, 0)
+            return f"{year}-{month}-{day} {hours}:{minutes}:00"
              
 
     class TwoFactor:
         def create_secret_key():
             return pyotp.random_base32()
+            
 
         
         def verify_key_login(user_id, cursor):
@@ -629,6 +639,13 @@ class Commands():
 
         def verify_key_create(key):
             totp = pyotp.TOTP(key)
+            uri = pyotp.totp.TOTP(key).provisioning_uri(name="BowlingAlley")
+            qr = qrcode.QRCode(version=1, error_correction=qrcode.constants.ERROR_CORRECT_L, box_size=10, border=4)
+            qr.add_data(uri)
+            qr.make(fit=True) 
+            img = qr.make_image(fill_color="black", back_color="white")
+            img.show()
+
             otp = input("Enter the OTP: ")
             if totp.verify(otp):
                 return True

@@ -296,26 +296,28 @@ class Commands():
                                 print("")
                                 print("------------------------------------")
                                 print("")
-                                print("Invalid Number")
+                                print("Choose a Selection")
                                 print("")
                                 print("1. Book a Session")
-                                print("2. ???")
+                                print("2. View Sessions")
                     else:
                         
                         print("")
                         print("")
                         print("")
+                        print("")
+                        print("")
+                        print("")
                         print("------------------------------------")
                         print("")
-                        print("Bowling Alley System")
+                        print("Welcome")
                         print("")
                         print("------------------------------------")
                         print("")
-                        print("Enter a Number")
+                        print("Choose a Selection")
                         print("")
-                        print("1. Create Account")
-                        print("")
-                        print("2. Login Account")
+                        print("1. Book a Session")
+                        print("2. View Sessions")
 
         def booking_page(self):
             print("")
@@ -594,17 +596,15 @@ class Commands():
         def validate_date(date):
             pattern = r'^(0[1-9]|[12][0-9]|3[01])/(0[1-9]|1[0-2])/\d{4}$'
             if re.match(pattern, date):
-                input_date = datetime.strptime(date, "%d/%m/%Y")
-                if input_date >= datetime.now(): 
+                input_date = datetime.datetime.strptime(date, "%d/%m/%Y")
+                if input_date >= datetime.datetime.now(): 
                     return True
             return False
         
         def validate_time(time):
             pattern = r"^(0[0-9]|1[0-9]|2[0-3]):([0-5][0-9])$"
             if re.match(pattern, time):
-                input_time = datetime.strptime(time, "%H:%M")
-                if input_time >= datetime.now(): 
-                    return True
+                return True
             return False
         
         def validate_date_time_string(date, time):
@@ -612,8 +612,8 @@ class Commands():
             time_list = time.split(":")
 
             day = int(date_list[0])
-            month = int(date_list[0] )
-            year = int(date_list[0] )
+            month = int(date_list[1] )
+            year = int(date_list[2] )
             hours = int(time_list[0] )
             minutes = int(time_list[1] )
             return f"{year}-{month}-{day} {hours}:{minutes}:00"
@@ -622,8 +622,6 @@ class Commands():
     class TwoFactor:
         def create_secret_key():
             return pyotp.random_base32()
-            
-
         
         def verify_key_login(user_id, cursor):
             cursor.execute("""

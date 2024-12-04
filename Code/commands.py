@@ -16,7 +16,7 @@ class Commands():
 
 
         def landing_page(self):
-                
+                self.user_id = None
                 print("")
                 print("")
                 print("")
@@ -26,15 +26,22 @@ class Commands():
                 print("")
                 print("")
                 print("Press the valid number for your request")
+                print("Enter exit to close")
                 print("")
                 print("1. Create Account")
                 print("")
                 print("2. Login Account")
+                print("")
+                print("3. Create Admin Account")
                 print("------------------------------------")
                 
 
                 while True:
                     user_input = input("Request: ")
+                    if Commands.Verification.exit_input(user_input):
+                        self.close_db_connection()
+                        exit()
+
                     if user_input.isdigit():
 
                         match str(user_input):
@@ -44,6 +51,9 @@ class Commands():
 
                             case "2":
                                 self.login_account_page()
+                                break
+                            case "3":
+                                self.create_admin_account_page()
                                 break
                             case _:
                                 print("")
@@ -85,6 +95,7 @@ class Commands():
             print("------------------------------------")
             print("")
             print("Create Account")
+            print("Enter exit to return")
             print("")
             print("------------------------------------")
             print("")
@@ -93,7 +104,10 @@ class Commands():
             print("Input Your First Name")
 
             while True:
+                
                 f_name = input("First Name: ")
+                if Commands.Verification.exit_input(f_name):
+                        self.landing_page()
                 if Commands.Verification.validate_name(f_name):
                     break
                 print("")
@@ -107,6 +121,8 @@ class Commands():
             print("Input Your Last Name")
             while True:
                 l_name = input("Last Name: ")
+                if Commands.Verification.exit_input(l_name):
+                        self.landing_page()
                 if Commands.Verification.validate_name(l_name):
                     break
                 print("")
@@ -120,6 +136,8 @@ class Commands():
             print("Input Your Age")
             while True:
                 age = input("Age: ")
+                if Commands.Verification.exit_input(age):
+                        self.landing_page()
                 if Commands.Verification.validate_age(age):
                     break
                 print("")
@@ -133,6 +151,8 @@ class Commands():
             print("Input Your Email Adress")
             while True:
                 email = input("Email Adress: ")
+                if Commands.Verification.exit_input(email):
+                        self.landing_page()
                 if Commands.Verification.validate_email(email):
                     if Commands.Verification.validate_email_duplicate(self.cursor, email):
                         break
@@ -150,17 +170,13 @@ class Commands():
             print("")
             print("")
             print("")
-            print("Input Your Phone Number")
+            print("Input Your Phone Number e.g.(+61490767436)")
             while True:
                 phone_number = input("Phone Number: ")
+                if Commands.Verification.exit_input(phone_number):
+                        self.landing_page()
                 if Commands.Verification.validate_phone_number(phone_number):
-                    if Commands.Verification.validate_phone_number_duplicate(self.cursor ,phone_number):
-                        break
-                    else:
-                        print("")
-                        print("")
-                        print("")
-                        print("Your Phone Number Is Already In Use")
+                    break
                 else:
                     print("")
                     print("")
@@ -174,6 +190,8 @@ class Commands():
             print("Include (A-z, !$%#^, 0-9) ")
             while True:
                 password = input("Password: ")
+                if Commands.Verification.exit_input(password):
+                        self.landing_page()
                 if Commands.Verification.validate_password(password):
                     break
                 print("")
@@ -187,9 +205,8 @@ class Commands():
             print("")
             secret_key = Commands.TwoFactor.create_secret_key()
 
-            if Commands.TwoFactor.verify_key_create(secret_key) or True == True:
+            if Commands.TwoFactor.verify_key_create(secret_key):
                 password_hash = Commands.Hashing.hashing_string(password)
-                self.open_db_connection()
                 self.add_users(f_name, l_name, age, email, phone_number, password_hash, secret_key)
                 user_id = self.return_user_id(email, password)
                 self.user_id = user_id
@@ -206,8 +223,143 @@ class Commands():
 
 
 
+        def create_admin_account_page(self):
+            print("")
+            print("")
+            print("")
+            print("------------------------------------")
+            print("")
+            print("Create Admin Account")
+            print("Enter exit to return")
+            print("")
+            print("------------------------------------")
+            print("")
+            print("")
+            print("")
+            print("Input Your First Name")
 
+            while True:
+                
+                f_name = input("First Name: ")
+                if Commands.Verification.exit_input(f_name):
+                        self.landing_page()
+                if Commands.Verification.validate_name(f_name):
+                    break
+                print("")
+                print("")
+                print("")
+                print("Invalid First Name ")
+            
+            print("")
+            print("")
+            print("")
+            print("Input Your Last Name")
+            while True:
+                l_name = input("Last Name: ")
+                if Commands.Verification.exit_input(l_name):
+                        self.landing_page()
+                if Commands.Verification.validate_name(l_name):
+                    break
+                print("")
+                print("")
+                print("")
+                print("Invalid Last Name ")
+            
+            print("")
+            print("")
+            print("")
+            print("Input Your Age")
+            while True:
+                age = input("Age: ")
+                if Commands.Verification.exit_input(age):
+                        self.landing_page()
+                if Commands.Verification.validate_age(age):
+                    break
+                print("")
+                print("")
+                print("")
+                print("Invalid Age ")
+            
+            print("")
+            print("")
+            print("")
+            print("Input Your Email Adress")
+            while True:
+                email = input("Email Adress: ")
+                if Commands.Verification.exit_input(email):
+                        self.landing_page()
+                if Commands.Verification.validate_email(email):
+                    if Commands.Verification.validate_email_duplicate(self.cursor, email):
+                        break
+                    else:
+                        print("")
+                        print("")
+                        print("")
+                        print("Your Email Adress Is Already In Use")
+                else:
+                    print("")
+                    print("")
+                    print("")
+                    print("Invalid Email Adress ")
+           
+            print("")
+            print("")
+            print("")
+            print("Input Your Phone Number e.g.(+61490767436)")
+            while True:
+                phone_number = input("Phone Number: ")
+                if Commands.Verification.exit_input(phone_number):
+                        self.landing_page()
+                if Commands.Verification.validate_phone_number(phone_number):
+                    break
+                else:
+                    print("")
+                    print("")
+                    print("")
+                    print("Invalid Phone Number ")
+            
+            print("")
+            print("")
+            print("")
+            print("Input Your Password")
+            print("Include (A-z, !$%#^, 0-9) ")
+            while True:
+                password = input("Password: ")
+                if Commands.Verification.exit_input(password):
+                        self.landing_page()
+                if Commands.Verification.validate_password(password):
+                    break
+                print("")
+                print("")
+                print("")
+                print("Invalid Password include (A-z, !$%#^, 0-9) ")
+                print("Password Length must be longer than 8 charcters and less then 20 ")
 
+            
+            print("")
+            print("")
+            print("")
+            print("Input Admin Code")
+            admin_code = input("Code: ")
+            secrets = Commands.SecretKeyService.get_secret()
+            if secrets['admin_sc'] != admin_code:
+                print("Invalid")
+                self.landing_page()            
+            else:
+                print("")
+                print("")
+                print("")
+                secret_key = Commands.TwoFactor.create_secret_key()
+                if Commands.TwoFactor.verify_key_create(secret_key):
+                    password_hash = Commands.Hashing.hashing_string(password)
+                    self.add_users(f_name, l_name, age, email, phone_number, password_hash, secret_key, 1)
+                    user_id = self.return_user_id(email, password)
+                    self.user_id = user_id
+                    self.dashboard_page()
+
+                else:
+                    print("Invalid OPT")
+                    self.landing_page()
 
 
 
@@ -218,6 +370,7 @@ class Commands():
             print("------------------------------------")
             print("")
             print("Login Account")
+            print("Enter exit to return")
             print("")
             print("------------------------------------")
             print("")
@@ -226,6 +379,8 @@ class Commands():
             print("Input Your Email Adress")
             while True:
                 email = input("Email Adress: ")
+                if Commands.Verification.exit_input(email):
+                        self.landing_page()
                 if Commands.Verification.validate_email(email):
                     break
                 else:
@@ -240,6 +395,8 @@ class Commands():
             print("Input Your Password")
             while True:
                 password = input("Password: ")
+                if Commands.Verification.exit_input(password):
+                        self.landing_page()
                 if Commands.Verification.validate_password(password):
                     break
                 else:
@@ -253,138 +410,359 @@ class Commands():
             if Commands.Verification.validate_login(self.cursor, email, password):
 
                 user_id = self.return_user_id(email, password)
-                self.user_id = user_id
-                Commands.TwoFactor.verify_key_login(user_id)
-
+                if Commands.TwoFactor.verify_key_login(user_id, self.cursor):
+                    self.user_id = user_id
+                    self.dashboard_page()
+                else:
+                    print("Incorrect")
+                    self.landing_page()
             else:
                 self.landing_page()
                 
 
         def dashboard_page(self):
-            print("")
-            print("")
-            print("")
-            print("------------------------------------")
-            print("")
-            print("Welcome")
-            print("")
-            print("------------------------------------")
-            print("")
-            print("Choose a Selection")
-            print("")
-            print("1. Book a Session")
-            print("2. View Sessions")
-            while True:
-                    user_input = input("Request: ")
-                    if user_input.isdigit():
+            if not self.check_admin():
+                print("")
+                print("")
+                print("")
+                print("------------------------------------")
+                print("")
+                print("Welcome")
+                print("Enter exit to return")
+                print("")
+                print("------------------------------------")
+                print("")
+                print("Choose a Selection")
+                print("")
+                print("1. Book a Session")
+                print("2. View/Cancel/Update Sessions")
+                while True:
+                        user_input = input("Request: ")
+                        if Commands.Verification.exit_input(user_input):
+                            self.landing_page()
+                        if user_input.isdigit():
 
-                        match str(user_input):
-                            case "1":
-                                self.booking_page()
-                                break
+                            match str(user_input):
+                                case "1":
+                                    self.booking_page()
+                                    break
 
-                            case "2":
-                                self.view_sessions()
-                                break
-                            case _:
-                                print("")
-                                print("")
-                                print("")
-                                print("------------------------------------")
-                                print("")
-                                print("Welcome")
-                                print("")
-                                print("------------------------------------")
-                                print("")
-                                print("Choose a Selection")
-                                print("")
-                                print("1. Book a Session")
-                                print("2. View Sessions")
-                    else:
-                        
-                        print("")
-                        print("")
-                        print("")
-                        print("")
-                        print("")
-                        print("")
-                        print("------------------------------------")
-                        print("")
-                        print("Welcome")
-                        print("")
-                        print("------------------------------------")
-                        print("")
-                        print("Choose a Selection")
-                        print("")
-                        print("1. Book a Session")
-                        print("2. View Sessions")
+                                case "2":
+                                    self.view_sessions()
+                                    break
+                                case _:
+                                    print("")
+                                    print("")
+                                    print("")
+                                    print("------------------------------------")
+                                    print("")
+                                    print("Welcome")
+                                    print("")
+                                    print("------------------------------------")
+                                    print("")
+                                    print("Choose a Selection")
+                                    print("")
+                                    print("1. Book a Session")
+                                    print("2. View/Cancel/Update Sessions")
+                        else:
+                            
+                            print("")
+                            print("")
+                            print("")
+                            print("")
+                            print("")
+                            print("")
+                            print("------------------------------------")
+                            print("")
+                            print("Welcome")
+                            print("")
+                            print("------------------------------------")
+                            print("")
+                            print("Choose a Selection")
+                            print("")
+                            print("1. Book a Session")
+                            print("2. View/Cancel/Update Sessions")
+            else:
+                print("")
+                print("")
+                print("")
+                print("------------------------------------")
+                print("")
+                print("Welcome")
+                print("Enter exit to return")
+                print("")
+                print("------------------------------------")
+                print("")
+                print("Choose a Selection")
+                print("")
+                print("1. Book a Session")
+                print("2. View/Cancel/Update All Sessions")
+                print("3. View All Users")
+                while True:
+                        user_input = input("Request: ")
+                        if Commands.Verification.exit_input(user_input):
+                            self.landing_page()
+                        if user_input.isdigit():
+
+                            match str(user_input):
+                                case "1":
+                                    self.booking_page()
+                                    break
+
+                                case "2":
+                                    self.admin_display_all_sessions()
+                                    break
+
+                                case "3":
+                                    self.admin_display_all_users()
+                                    break
+
+                                case _:
+                                    print("")
+                                    print("")
+                                    print("")
+                                    print("------------------------------------")
+                                    print("")
+                                    print("Welcome")
+                                    print("")
+                                    print("------------------------------------")
+                                    print("")
+                                    print("Choose a Selection")
+                                    print("")
+                                    print("1. Book a Session")
+                                    print("2. View/Cancel/Update All Sessions")
+                                    print("3. View All Users")
+                        else:
+                            
+                            print("")
+                            print("")
+                            print("")
+                            print("------------------------------------")
+                            print("")
+                            print("Welcome")
+                            print("")
+                            print("------------------------------------")
+                            print("")
+                            print("Choose a Selection")
+                            print("")
+                            print("1. Book a Session")
+                            print("2. View/Cancel/Update All Sessions")
+                            print("3. View All Users")
+
+
+
+
+
+
+
+
 
         def booking_page(self):
-            print("")
-            print("")
-            print("")
-            print("------------------------------------")
-            print("")
-            print("Booking Session")
-            print("")
-            print("------------------------------------")
-            print("")
-            print("Enter Session Date")
-            print("")
-            while True:
-                date = input("Date (DD/MM/YYYY): ")
-                if Commands.Verification.validate_date(date):
-                    break
+            if not self.check_admin():
                 print("")
-                print("Invalid Session Date")
+                print("")
+                print("")
+                print("------------------------------------")
+                print("")
+                print("Booking Session")
+                print("Enter exit to return")
+                print("")
+                print("------------------------------------")
+                print("")
+                print("Enter Session Date")
+                print("")
+                while True:
+                    date = input("Date (DD/MM/YYYY): ")
+                    if Commands.Verification.exit_input(date):
+                            self.dashboard_page()
+                    if Commands.Verification.validate_date(date):
+                        break
+                    print("")
+                    print("Invalid Session Date")
+                    print("")
+
+                print("")
                 print("")
 
-            print("")
-            print("")
+
+                while True:
+                    time = input("Time (HH:MM): ")
+                    if Commands.Verification.exit_input(time):
+                            self.dashboard_page()
+                    if Commands.Verification.validate_time(time):
+                        break
+                    print("")
+                    print("Invalid Session Time")
+                    print("")
+                    
+                print("")
+                print("")
 
 
-            while True:
-                time = input("Time (HH:MM): ")
-                if Commands.Verification.validate_time(time):
-                    break
-                print("")
-                print("Invalid Session Time")
-                print("")
+                date_time = Commands.Verification.validate_date_time_string(date, time)
                 
-            print("")
-            print("")
-
-
-            date_time = Commands.Verification.validate_date_time_string(date, time)
-            
-            
-            while True:
+                
                 print("How many people will be playing (Max 6)")
-                amount = input("Amount: ")
-                if Commands.Verification.validate_group_size(amount):
-                    break
+                while True:
+                    amount = input("Amount: ")
+                    if Commands.Verification.exit_input(amount):
+                            self.dashboard_page()
+                    if Commands.Verification.validate_group_size(amount):
+                        break
+                    print("")
+                    print("Invalid Amount")
+                    print("")
+
                 print("")
-                print("Invalid Amount")
                 print("")
 
-            print("")
-            print("")
+                print("Comfirm your booking")
+                print(f"Date: {date}")
+                print(f"Time: {time}")
+                print(f"Group Size: {amount}")
+                print("")
+                while True:
+                    selection = input("Confirm (yes/y) or (no/n): ")
+                    if Commands.Verification.exit_input(selection):
+                            self.dashboard_page()
+                    value = Commands.Verification.validate_selection(selection)
+                    if value == True:
+                        self.add_session(date_time, amount, self.user_id)
+                        self.dashboard_page()
+                    elif value == False:
+                        self.dashboard_page()
+                    print("")
+                    print("")
+                    print("Invalid Selection")
 
-            print("Comfirm your booking")
-            print(f"Date: {date}")
-            print(f"Time: {time}")
-            print(f"Group Size: {amount}")
-            while True:
-                selection = input("Confirm (yes/y) or (no/n): ")
-                value = Commands.Verification.validate_selection(selection)
-                if value == True:
-                    self.add_session(date_time, amount, self.user_id)
-                    self.dashboard_page()
-                elif value == False:
-                    self.dashboard_page()
+            else:
                 print("")
                 print("")
-                print("Invalid Selection")
+                print("")
+                print("------------------------------------")
+                print("")
+                print("Booking Session")
+                print("Enter exit to return")
+                print("")
+                print("------------------------------------")
+                print("")
+                print("Enter Session Date")
+                print("")
+                while True:
+                    date = input("Date (DD/MM/YYYY): ")
+                    if Commands.Verification.exit_input(date):
+                            self.dashboard_page()
+                    if Commands.Verification.validate_date(date):
+                        break
+                    print("")
+                    print("Invalid Session Date")
+                    print("")
+
+                print("")
+                print("")
+
+
+                while True:
+                    time = input("Time (HH:MM): ")
+                    if Commands.Verification.exit_input(time):
+                            self.dashboard_page()
+                    if Commands.Verification.validate_time(time):
+                        break
+                    print("")
+                    print("Invalid Session Time")
+                    print("")
+                    
+                print("")
+                print("")
+
+
+                date_time = Commands.Verification.validate_date_time_string(date, time)
+                
+                
+                while True:
+                    print("How many people will be playing (Max 6)")
+                    amount = input("Amount: ")
+                    if Commands.Verification.exit_input(amount):
+                            self.dashboard_page()
+                    if Commands.Verification.validate_group_size(amount):
+                        break
+                    print("")
+                    print("Invalid Amount")
+                    print("")
+
+                print("")
+                print("")
+
+                print("Input Your First Name")
+
+                while True:
+                    f_name = input("First Name: ")
+                    if Commands.Verification.exit_input(f_name):
+                            self.dashboard_page()
+                    if Commands.Verification.validate_name(f_name):
+                        break
+                    print("")
+                    print("")
+                    print("")
+                    print("Invalid First Name ")
+                
+                print("")
+                print("")
+                print("")
+                print("Input Your Last Name")
+                while True:
+                    l_name = input("Last Name: ")
+                    if Commands.Verification.exit_input(l_name):
+                            self.dashboard_page()
+                    if Commands.Verification.validate_name(l_name):
+                        break
+                    print("")
+                    print("")
+                    print("")
+                    print("Invalid Last Name ")
+
+                print("")
+                print("")
+
+                print("")
+            
+                print("Input Your Phone Number e.g.(+61490767436)")
+                while True:
+                    phone_number = input("Phone Number: ")
+                    if Commands.Verification.exit_input(phone_number):
+                            self.dashboard_page()
+                    if Commands.Verification.validate_phone_number(phone_number):
+                        break
+                    else:
+                        print("")
+                        print("")
+                        print("")
+                        print("Invalid Phone Number ")
+
+                print("")
+                print("")
+                print("")
+                print("Comfirm your booking")
+                print(f"Date: {date}")
+                print(f"Time: {time}")
+                print(f"Group Size: {amount}")
+                print(f"First Name: {f_name}")
+                print(f"Last Name: {l_name}")
+                print(f"Phone Number: {phone_number}")
+                print("")
+                while True:
+                    selection = input("Confirm (yes/y) or (no/n): ")
+                    if Commands.Verification.exit_input(selection):
+                            self.dashboard_page()
+                    value = Commands.Verification.validate_selection(selection)
+                    if value == True:
+                        self.add_session(date_time, amount, self.user_id, f_name, l_name, phone_number)
+                        self.dashboard_page()
+                    elif value == False:
+                        self.dashboard_page()
+                    print("")
+                    print("")
+                    print("Invalid Selection")
 
 
         def view_sessions(self):
@@ -395,6 +773,7 @@ class Commands():
             print("------------------------------------")
             print("")
             print("All Sessions")
+            print("Enter exit to return")
             print("")
             print("------------------------------------")
             print("")
@@ -403,115 +782,496 @@ class Commands():
 
             formated_sessions = []
             for row in all_sessions:
-                session = [row[1], row[2]]
+                date_time = datetime.datetime.strptime(str(row[1]), "%Y-%m-%d %H:%M:%S") 
+                formatted_datetime = date_time.strftime("%d/%m/%Y %H:%M")
+                session = [row[0] ,formatted_datetime, row[2]]
                 formated_sessions.append(session)
 
-            print(tabulate(formated_sessions, headers=['Date & Time', 'Group Size'], tablefmt='orgtbl'))
+            print(tabulate(formated_sessions, headers=['Session ID', 'Date & Time', 'Group Size'], tablefmt='orgtbl'))
             print("")
-            input("Enter to continue: ")
+            print("")
+            print("Enter Selection")
+            print("1. Cancel Booking")
+            print("2. Update Booking")
+            print("Enter to continue")
+            print("")
+
+            
+            user_input = input("Selection: ")
+            if user_input == "1":
+                while True:
+                    print("")
+                    print("Enter Session ID")
+                    session_id = input("Selection: ")
+                    if Commands.Verification.exit_input(session_id):
+                        self.dashboard_page()
+
+                    if session_id.isdigit():
+
+                        self.cursor.execute(
+                            """
+                            SELECT * FROM Sessions 
+                            WHERE SessionID = ?
+                        """, (session_id))
+                        session = self.cursor.fetchone()
+                        if session != [] and session != None:
+                            if session[3] == self.user_id:
+                                print("")
+                                print(f"Are you sure you want to delete session: {session_id}")
+                                while True:
+                                    selection = input("Confirm (yes/y) or (no/n): ")
+                                    if Commands.Verification.exit_input(selection):
+                                        self.dashboard_page()
+                                    value = Commands.Verification.validate_selection(selection)
+                                
+                                    if value == True:
+                                        self.remove_session(session_id)
+                                        self.dashboard_page()
+                                    elif value == False:
+                                        self.dashboard_page()
+                                    print("Invalid Selection")
+                            else:
+                                print(f"Invalid Session ID")
+
+                        else:
+                            print(f"Invalid Session ID")
+                    else:
+                        print("Must be a digit")
+                        print("")
+
+            elif user_input == "2":
+                while True:
+                    print("")
+                    print("Enter Session ID")
+                    session_id = input("Selection: ")
+                    if Commands.Verification.exit_input(session_id):
+                        self.dashboard_page()
+
+                    if session_id.isdigit():
+
+                        self.cursor.execute(
+                            """
+                            SELECT * FROM Sessions 
+                            WHERE SessionID = ?
+                        """, (session_id))
+                        session = self.cursor.fetchone()
+                        if session != [] and session != None:
+                            if session[3] == self.user_id:
+                                date_time = datetime.datetime.strptime(str(session[1]), "%Y-%m-%d %H:%M:%S")
+                                updates = {}
+                                print("Enter Session Date (Leave Empty for Original)")
+                                print("")
+                                while True:
+                                    date = input("Date (DD/MM/YYYY): ")
+                                    if Commands.Verification.exit_input(date):
+                                            self.dashboard_page()
+                                    if date == '':
+                                        date = None
+                                        break
+                                    elif Commands.Verification.validate_date(date):
+                                        stripped_date = datetime.datetime.strptime(date, "%d/%m/%Y")
+                                        date = stripped_date.strftime("%Y-%m-%d")
+                                        break
+                                    print("")
+                                    print("Invalid Session Date")
+                                    print("")
+
+                                print("")
+                                print("")
+
+
+                                while True:
+                                    time = input("Time (HH:MM): ")
+                                    if Commands.Verification.exit_input(time):
+                                            self.dashboard_page()
+                                    if time == '':
+                                        time = None
+                                        break
+                                    elif Commands.Verification.validate_time(time):
+                                        break
+                                    print("")
+                                    print("Invalid Session Time")
+                                    print("")
+                                    
+                                print("")
+                                print("")
+
+                                if time == None and date == None:
+                                    updates["DateTime"] = str(datetime.datetime.strptime(f"{str(date_time.date())} {str(date_time.time())}", "%Y-%m-%d %H:%M:%S"))
+                                elif time == None:
+                                    updates["DateTime"] = str(datetime.datetime.strptime(f"{str(date)} {str(date_time.time())}", "%Y-%m-%d %H:%M:%S"))
+                                elif date == None:
+                                    updates["DateTime"] = str(datetime.datetime.strptime(f"{str(date_time.date())} {str(time)}:00", "%Y-%m-%d %H:%M:%S"))
+                                else:
+                                    updates["DateTime"] = str(datetime.datetime.strptime(f"{str(date)} {str(time)}:00", "%Y-%m-%d %H:%M:%S"))
+
+                                print("How many people will be playing (Max 6) (Leave Empty for Original)")
+                                while True:
+                                    amount = input("Amount: ")
+                                    if Commands.Verification.exit_input(amount):
+                                            self.dashboard_page()
+                                    if amount == '':
+                                        amount = None
+                                        break
+                                    if Commands.Verification.validate_group_size(amount):
+                                        
+                                        updates["GroupAmount"] = int(amount)
+                                        break
+                                    print("")
+                                    print("Invalid Amount")
+                                    print("")
+
+                                print("")
+                                print("")
+
+                                print("Comfirm your session update")
+                                print(f"Date: {date}")
+                                print(f"Time: {time}")
+                                print(f"Group Size: {amount}")
+                                print("")
+                                while True:
+                                    selection = input("Confirm (yes/y) or (no/n): ")
+                                    if Commands.Verification.exit_input(selection):
+                                            self.dashboard_page()
+                                    value = Commands.Verification.validate_selection(selection)
+                                    if value == True:
+                                        self.update_session(session_id, updates)
+                                        self.dashboard_page()
+                                    elif value == False:
+                                        self.dashboard_page()
+                                    print("")
+                                    print("")
+                                    print("Invalid Selection")
+
+
+            if Commands.Verification.exit_input(user_input):
+                self.dashboard_page()
             self.dashboard_page()
+
+
+
+
+        def admin_display_all_sessions(self):
+            try:
+                print("")
+                print("")
+                print("")
+                print("------------------------------------")
+                print("")
+                print("All Users Sessions")
+                print("Enter exit to return")
+                print("")
+                print("------------------------------------")
+                print("")
+                print("")
+                print("")
+                self.cursor.execute("""
+                SELECT * FROM Sessions
+                ORDER BY DateTime;
+                """)
+                
+                sessions = self.cursor.fetchall()
+                
+                formated_sessions = []
+                for row in sessions:
+                    self.cursor.execute("""
+                    SELECT * FROM Users
+                    WHERE UserID = ?;
+                    """, row[0])
+                    user = self.cursor.fetchone()
+                    
+                    date_time = datetime.datetime.strptime(str(row[1]), "%Y-%m-%d %H:%M:%S") 
+                    formatted_datetime = date_time.strftime("%d/%m/%Y %H:%M")
+
+
+                    if user[8] == 1:
+                        session = [row[0] ,formatted_datetime, row[2], row[4], row[5], row[6], "Yes"]
+                    else:
+                        session = [row[0], formatted_datetime, row[2], user[1], user[2], user[5], ""]
+                    
+                    formated_sessions.append(session)
+
+                print(tabulate(formated_sessions, headers=['Session ID' ,'Date & Time', 'Group Size', 'First Name', 'Last Name', 'Phone Number', 'Admin'], tablefmt='orgtbl'))
+                print("")
+                print("Enter Selection")
+                print("1. Cancel Booking")
+                print("Enter to continue")
+                
+                user_input = input("Selection: ")
+                if user_input == "1":
+                    while True:
+                        print("")
+                        print("Enter Session ID")
+                        session_id = input("Selection: ")
+                        if Commands.Verification.exit_input(session_id):
+                            self.dashboard_page()
+
+                        if session_id.isdigit():
+
+                            self.cursor.execute(
+                                """
+                                SELECT * FROM Sessions 
+                                WHERE SessionID = ?
+                            """, (session_id))
+                            session = self.cursor.fetchone()
+                            if session != [] and session != None:
+                                print("")
+                                print(f"Are you sure you want to delete session: {session_id}")
+                                while True:
+                                    selection = input("Confirm (yes/y) or (no/n): ")
+                                    if Commands.Verification.exit_input(selection):
+                                        self.dashboard_page()
+                                    value = Commands.Verification.validate_selection(selection)
+                                
+                                    if value == True:
+                                        self.remove_session(session_id)
+                                        self.dashboard_page()
+                                    elif value == False:
+                                        self.dashboard_page()
+                                    print("Invalid Selection")
+
+                            else:
+                                print(f"Session ID {session_id} dosn't exist")
+                        else:
+                            print("Must be a digit")
+                            print("")
+                
+                self.dashboard_page()
+            except TypeError as e:
+                print(f"Error Occured {e}")
+                self.landing_page()
+
+
+        def admin_display_all_users(self):
+            try:
+                print("")
+                print("")
+                print("")
+                print("------------------------------------")
+                print("")
+                print("All Users")
+                print("Enter exit to return")
+                print("")
+                print("------------------------------------")
+                print("")
+                print("")
+                print("")
+                self.cursor.execute("""
+                SELECT * FROM Users
+                """)
+                
+                users = self.cursor.fetchall()
+                
+                formated_sessions = []
+                for user in users:
+                    if user[8] != 1:
+                        row = [user[1], user[2], user[3], user[4], user[5]]
+                    
+                        formated_sessions.append(row)
+
+                print(tabulate(formated_sessions, headers=['First Name', 'Last Name', 'Age', 'Email', 'Phone Number'], tablefmt='orgtbl'))
+                input("Enter to Continue: ")
+                
+                self.dashboard_page()
+            except TypeError as e:
+                print(f"Error Occured {e}")
+                self.landing_page()
+
+
+
+
+
 
         def open_db_connection(self):
             secret_values = Commands.SecretKeyService.get_secret()
-            print(secret_values)
-            connection_string = (
-                r"Driver={ODBC Driver 17 for SQL Server};"
-                f"Server={secret_values['ip']};"
-                f"Database={str(secret_values['db'])};"
-                f"UID={secret_values['uid']};"
-                f"PWD={secret_values['pwd']};"
-                r"Column Encryption Settings=Enabled;"
-            )
+            if secret_values != None:
 
-            try:
-                self.conn = pyodbc.connect(connection_string)
-                print("Connection successful")
-                self.cursor = self.conn.cursor()
-            except pyodbc.InterfaceError as e:
-                print(f"Error: {e}")
+                print(secret_values)
+                # connection_string = (
+                #     r"Driver={ODBC Driver 17 for SQL Server};"
+                #     f"Server={secret_values['ip']};"
+                #     f"Database={str(secret_values['db'])};"
+                #     f"UID={secret_values['uid']};"
+                #     f"PWD={secret_values['pwd']};"
+                #     r"Column Encryption Settings=Enabled;"
+                # )
+                connection_string = (
+                    r"Driver={ODBC Driver 17 for SQL Server};"
+                    r"Server=DESKTOP-AGJD7U8\SQLEXPRESS;"
+                    r"Database=BowlingAlleyDB;"
+                    r"Trusted_Connection=yes;"
+                    
+                )
+
+                try:
+                    self.conn = pyodbc.connect(connection_string)
+                    print("Connection successful")
+                    self.cursor = self.conn.cursor()
+                    self.landing_page()
+                except pyodbc.InterfaceError as e:
+                    print(f"Error: {e}")
+
+            else:
+                print("Error")
+                
+                
 
         def close_db_connection(self):
-            self.cursor.close()
-            self.conn.close()
+            try:
+                self.cursor.close()
+                self.conn.close()
+            except:
+                print("Error")
 
         ###
         ### SQL QUERYS
         ###
 
-        def create_user_table(self):
-            self.cursor.execute("""
-                    CREATE TABLE Users (
-                    UserID int IDENTITY(1,1) PRIMARY KEY (UserID),
-                    FirstName nvarchar(30),
-                    LastName nvarchar(30),
-                    Age tinyint,
-                    Email nvarchar(50),
-                    PhoneNum nvarchar(13),
-                    PasswordHash nvarchar(250),
-                    SecretKeyHash nvarchar(250),
-                    );
-                """)
-            self.cursor.commit()
+        def update_session(self, session_id, updates):
+            try:
+                query = "UPDATE Sessions SET "
+                pramaters = []
+                for key, value in updates.items():
+                    if value is not None:
+                        query += f"{key} = ?, "
+                        pramaters.append(value)
+                query = query.rstrip(", ")
+                query += " WHERE SessionID = ?"
+                pramaters.append(session_id)
+                print(query)
+                print(pramaters)
+                self.cursor.execute(query, pramaters)
+                self.cursor.commit()
 
-        def create_session_table(self):
-            self.cursor.execute("""
-                    CREATE TABLE Sessions (
-                    SessionID int IDENTITY(1,1) PRIMARY KEY (SessionID),
-                    DateTime smalldatetime,
-                    GroupAmount tinyint,
-                    CustomerID int FOREIGN KEY (CustomerID) REFERENCES Users (UserID)
-                    );
-                """)
-            self.cursor.commit()
+            except TypeError as e:
+                print(f"Error {e}")
+                self.landing_page()
+                
+
+
+        def remove_session(self, session_id):
+            try:
+                self.cursor.execute(
+                    """
+                    DELETE FROM Sessions
+                    WHERE SessionID = ?
+            
+                """, (session_id))
+                self.cursor.commit()
+            except:
+                print("Error")
+                self.landing_page()
+
+
+
+        def check_admin(self):
+            try:
+                self.cursor.execute(
+                    """
+                    SELECT * FROM Users 
+                    WHERE UserID = ?
+                """, (self.user_id))
+                user = self.cursor.fetchone()
+                if user[8] == 1:
+                    return True
+                return False
+            except:
+                print("Error")
+                self.landing_page()
+            
+
+        # def create_user_table(self):
+        #     self.cursor.execute("""
+        #             CREATE TABLE Users (
+        #             UserID int IDENTITY(1,1) PRIMARY KEY (UserID),
+        #             FirstName nvarchar(30),
+        #             LastName nvarchar(30),
+        #             Age tinyint,
+        #             Email nvarchar(50),
+        #             PhoneNum nvarchar(13),
+        #             PasswordHash nvarchar(250),
+        #             SecretKeyHash nvarchar(250),
+        #             Admin BIT
+        #             );
+        #         """)
+        #     self.cursor.commit()
+
+        # def create_session_table(self):
+        #     self.cursor.execute("""
+        #             CREATE TABLE Sessions (
+        #             SessionID int IDENTITY(1,1) PRIMARY KEY (SessionID),
+        #             DateTime smalldatetime,
+        #             GroupAmount tinyint,
+        #             CustomerID int FOREIGN KEY (CustomerID) REFERENCES Users (UserID)
+        #             );
+        #         """)
+        #     self.cursor.commit()
 
         def return_all_users_sessions(self):
-            self.cursor.execute("""
-            SELECT * FROM Sessions 
-            WHERE CustomerID = ?
-            """, (self.user_id))
-            return self.cursor.fetchall()
-        
-        def add_session(self, date_time, group_amount, user_id):
-            self.cursor.execute("""
-            INSERT INTO Sessions (DateTime, GroupAmount, CustomerID)
-            VALUES (?, ?, ?)
-            """, (date_time, group_amount, user_id))
-            self.cursor.commit()
+            try:
+                self.cursor.execute("""
+                SELECT * FROM Sessions 
+                WHERE CustomerID = ?
+                """, (self.user_id))
+                return self.cursor.fetchall()
+            except:
+                print("Error")
+                self.landing_page()
 
 
+
+
+        def add_session(self, date_time, group_amount, user_id, f_name=None, l_name=None, phone_num=None):
+            try:
+                self.cursor.execute("""
+                INSERT INTO Sessions (DateTime, GroupAmount, CustomerID, FirstName, LastName, PhoneNum)
+                VALUES (?, ?, ?, ?, ?, ?)
+                """, (date_time, group_amount, user_id, f_name, l_name, phone_num))
+                self.cursor.commit()
+            except TypeError as e:
+                print(f"Error {e}")
+                self.dashboard_page()
+
         
-        def add_users(self, fname, lname, age, email, phone_num, password_hash, secret_key):
-            self.cursor.execute("""
-            INSERT INTO Users (FirstName, LastName, Age, Email, PhoneNum, PasswordHash, SecretKeyHash)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
-            """, (fname, lname, age, email, phone_num, password_hash, secret_key))
-            self.cursor.commit()
-            self.AdminDisplayAllInUsers()
+        def add_users(self, fname, lname, age, email, phone_num, password_hash, secret_key, admin=0):
+            try:
+                self.cursor.execute("""
+                INSERT INTO Users (FirstName, LastName, Age, Email, PhoneNum, PasswordHash, SecretKey, Admin)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                """, (fname, lname, age, email, phone_num, password_hash, secret_key, admin))
+                self.cursor.commit()
+            except:
+                print("Error Occured")
+                self.landing_page()
 
         def return_user_id(self, email, password):
-            self.cursor.execute("""
-            SELECT * FROM Users 
-            WHERE Email = ?
-            """, (email))
-            users = self.cursor.fetchall()
-            password_hasher = PasswordHasher()
-            for user in users:
-                try:
-                    if password_hasher.verify(user[6], password):
-                        return user[0]
-                    
-                except exceptions.VerifyMismatchError:
-                    return False
+            try:
+                self.cursor.execute("""
+                SELECT * FROM Users 
+                WHERE Email = ?
+                """, (email))
+                users = self.cursor.fetchall()
+                password_hasher = PasswordHasher()
+                for user in users:
+                    try:
+                        if password_hasher.verify(user[6], password):
+                            return user[0]
+                        
+                    except exceptions.VerifyMismatchError:
+                        return False
+            except:
+                print("Error Occured")
+                self.landing_page()
 
-        def AdminDisplayAllInUsers(self):
-            self.cursor.execute("""
-            SELECT * FROM Users
-            """)
-            users = self.cursor.fetchall()
-            for user in users:
-                print(user)
+        
 
     class Verification:
+        def exit_input(input):
+            if input.lower() == 'exit':
+                return True
+            return False
+
+
         def validate_selection(selection):
             if selection.lower() == "yes" or selection.lower() == "y":
                 return True
@@ -525,16 +1285,6 @@ class Commands():
                 if int(amount) > 0 and int(amount) <=6:
                     return True
             return False 
-
-        def validate_phone_number_duplicate(cursor, phone_num):
-            cursor.execute("""
-            SELECT * FROM Users 
-            WHERE PhoneNum = ?
-            """, (phone_num))
-            users = cursor.fetchall()
-            if users == []:
-                return True
-            return False
 
         def validate_email_duplicate(cursor, email):
             cursor.execute("""
@@ -597,7 +1347,8 @@ class Commands():
             pattern = r'^(0[1-9]|[12][0-9]|3[01])/(0[1-9]|1[0-2])/\d{4}$'
             if re.match(pattern, date):
                 input_date = datetime.datetime.strptime(date, "%d/%m/%Y")
-                if input_date >= datetime.datetime.now(): 
+
+                if datetime.datetime.now() < input_date <= datetime.datetime.now() + datetime.timedelta(days=10*365.25): 
                     return True
             return False
         
@@ -625,10 +1376,10 @@ class Commands():
         
         def verify_key_login(user_id, cursor):
             cursor.execute("""
-                SELECT * FROM Student WHERE UserID = ?
+                SELECT * FROM Users WHERE UserID = ?
             """, (user_id))
             user = cursor.fetchone()
-            print(user)
+            
             totp = pyotp.TOTP(user[7])
             otp = input("Enter the OTP: ")
             if totp.verify(otp):
@@ -637,13 +1388,15 @@ class Commands():
 
         def verify_key_create(key):
             totp = pyotp.TOTP(key)
-            uri = pyotp.totp.TOTP(key).provisioning_uri(name="BowlingAlley")
+            
+            uri = pyotp.totp.TOTP(key).provisioning_uri(name="Spare Bowling Alley")
             qr = qrcode.QRCode(version=1, error_correction=qrcode.constants.ERROR_CORRECT_L, box_size=10, border=4)
             qr.add_data(uri)
             qr.make(fit=True) 
             img = qr.make_image(fill_color="black", back_color="white")
             img.show()
 
+            
             otp = input("Enter the OTP: ")
             if totp.verify(otp):
                 return True
@@ -651,13 +1404,14 @@ class Commands():
 
     class SecretKeyService:
         def get_secret():
-            client = boto3.client(
+            try:
+                client = boto3.client(
                 "secretsmanager", 
                 aws_access_key_id=f"{os.environ['AWS_ACCESS_KEY_ID']}",
                 aws_secret_access_key=f"{os.environ['AWS_SECRET_ACCESS_KEY']}",
                 region_name=f"{os.environ['AWS_REGION_NAME']}")
 
-            try:
+            
                 response = client.get_secret_value(SecretId=f"{os.environ['AWS_SECRET_NAME']}")
                 if "SecretString" in response:
                     return json.loads(response["SecretString"])

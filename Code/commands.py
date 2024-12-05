@@ -497,7 +497,7 @@ class Commands():
                 print("")
                 print("1. Book a Session")
                 print("2. View/Cancel/Update All Sessions")
-                print("3. View All Users")
+                print("3. View/Delete Users")
                 while True:
                         user_input = input("Request: ")
                         if Commands.Verification.exit_input(user_input):
@@ -531,7 +531,7 @@ class Commands():
                                     print("")
                                     print("1. Book a Session")
                                     print("2. View/Cancel/Update All Sessions")
-                                    print("3. View All Users")
+                                    print("3. View/Delete Users")
                         else:
                             
                             print("")
@@ -547,7 +547,7 @@ class Commands():
                             print("")
                             print("1. Book a Session")
                             print("2. View/Cancel/Update All Sessions")
-                            print("3. View All Users")
+                            print("3. View/Delete Users")
 
 
 
@@ -867,6 +867,204 @@ class Commands():
                                             self.dashboard_page()
                                     if date == '':
                                         date = None
+                                        
+                                        break
+                                    elif Commands.Verification.validate_date(date):
+                                        stripped_date = datetime.datetime.strptime(date, "%d/%m/%Y")
+                                        date = stripped_date.strftime("%Y-%m-%d")
+                                        break
+                                    print("")
+                                    print("Invalid Session Date")
+                                    print("")
+
+                                print("")
+                                print("")
+
+
+                                while True:
+                                    time = input("Time (HH:MM): ")
+                                    if Commands.Verification.exit_input(time):
+                                            self.dashboard_page()
+                                    if time == '':
+                                        time = None
+                                        break
+                                    elif Commands.Verification.validate_time(time):
+                                        break
+                                    print("")
+                                    print("Invalid Session Time")
+                                    print("")
+                                    
+                                print("")
+                                print("")
+
+                                if time == None and date == None:
+                                    updates["DateTime"] = str(datetime.datetime.strptime(f"{str(date_time.date())} {str(date_time.time())}", "%Y-%m-%d %H:%M:%S"))
+                                elif time == None:
+                                    updates["DateTime"] = str(datetime.datetime.strptime(f"{str(date)} {str(date_time.time())}", "%Y-%m-%d %H:%M:%S"))
+                                elif date == None:
+                                    updates["DateTime"] = str(datetime.datetime.strptime(f"{str(date_time.date())} {str(time)}:00", "%Y-%m-%d %H:%M:%S"))
+                                else:
+                                    updates["DateTime"] = str(datetime.datetime.strptime(f"{str(date)} {str(time)}:00", "%Y-%m-%d %H:%M:%S"))
+
+                                
+
+                                print("How many people will be playing (Max 6) (Leave Empty for Original)")
+                                while True:
+                                    amount = input("Amount: ")
+                                    if Commands.Verification.exit_input(amount):
+                                            self.dashboard_page()
+                                    if amount == '':
+                                        amount = None
+                                        break
+                                    if Commands.Verification.validate_group_size(amount):
+                                        
+                                        updates["GroupAmount"] = int(amount)
+                                        break
+                                    print("")
+                                    print("Invalid Amount")
+                                    print("")
+
+                                print("")
+                                print("")
+
+                                print("Comfirm your session update")
+                                print(f"Date: {date}")
+                                print(f"Time: {time}")
+                                print(f"Group Size: {amount}")
+                                print("")
+                                while True:
+                                    selection = input("Confirm (yes/y) or (no/n): ")
+                                    if Commands.Verification.exit_input(selection):
+                                            self.dashboard_page()
+                                    value = Commands.Verification.validate_selection(selection)
+                                    if value == True:
+                                        self.update_session(session_id, updates)
+                                        self.dashboard_page()
+                                    elif value == False:
+                                        self.dashboard_page()
+                                    print("")
+                                    print("")
+                                    print("Invalid Selection")
+
+            self.dashboard_page()
+
+
+
+
+        def admin_display_all_sessions(self):
+            try:
+                print("")
+                print("")
+                print("")
+                print("------------------------------------")
+                print("")
+                print("All Users Sessions")
+                print("Enter exit to return")
+                print("")
+                print("------------------------------------")
+                print("")
+                print("")
+                print("")
+                self.cursor.execute("""
+                SELECT * FROM Sessions
+                ORDER BY DateTime;
+                """)
+                
+                sessions = self.cursor.fetchall()
+                
+                formated_sessions = []
+                for row in sessions:
+                    self.cursor.execute("""
+                    SELECT * FROM Users
+                    WHERE UserID = ?;
+                    """, row[3])
+                    user = self.cursor.fetchone()
+                    
+                    date_time = datetime.datetime.strptime(str(row[1]), "%Y-%m-%d %H:%M:%S") 
+                    formatted_datetime = date_time.strftime("%d/%m/%Y %H:%M")
+
+
+                    if user[8] == 1:
+                        session = [row[0] ,formatted_datetime, row[2], row[4], row[5], row[6], "Yes"]
+                    else:
+                        session = [row[0], formatted_datetime, row[2], user[1], user[2], user[5], ""]
+                    
+                    formated_sessions.append(session)
+
+                print(tabulate(formated_sessions, headers=['Session ID' ,'Date & Time', 'Group Size', 'First Name', 'Last Name', 'Phone Number', 'Admin'], tablefmt='orgtbl'))
+                print("")
+                print("Enter Selection")
+                print("1. Cancel Booking")
+                print("2. Update Booking")
+                print("Enter to continue")
+                print("")
+                
+                user_input = input("Selection: ")
+                if user_input == "1":
+                    while True:
+                        print("")
+                        print("Enter Session ID")
+                        session_id = input("Selection: ")
+                        if Commands.Verification.exit_input(session_id):
+                            self.dashboard_page()
+
+                        if session_id.isdigit():
+
+                            self.cursor.execute(
+                                """
+                                SELECT * FROM Sessions 
+                                WHERE SessionID = ?
+                            """, (session_id))
+                            session = self.cursor.fetchone()
+                            if session != [] and session != None:
+                                print("")
+                                print(f"Are you sure you want to delete session: {session_id}")
+                                while True:
+                                    selection = input("Confirm (yes/y) or (no/n): ")
+                                    if Commands.Verification.exit_input(selection):
+                                        self.dashboard_page()
+                                    value = Commands.Verification.validate_selection(selection)
+                                
+                                    if value == True:
+                                        self.remove_session(session_id)
+                                        self.dashboard_page()
+                                    elif value == False:
+                                        self.dashboard_page()
+                                    print("Invalid Selection")
+
+                            else:
+                                print(f"Session ID {session_id} dosn't exist")
+                        else:
+                            print("Must be a digit")
+                            print("")
+                
+                if user_input == "2":
+                    while True:
+                        print("")
+                        print("Enter Session ID")
+                        session_id = input("Selection: ")
+                        if Commands.Verification.exit_input(session_id):
+                            self.dashboard_page()
+
+                        if session_id.isdigit():
+
+                            self.cursor.execute(
+                                """
+                                SELECT * FROM Sessions 
+                                WHERE SessionID = ?
+                            """, (session_id))
+                            session = self.cursor.fetchone()
+                            if session != [] and session != None:
+                                date_time = datetime.datetime.strptime(str(session[1]), "%Y-%m-%d %H:%M:%S")
+                                updates = {}
+                                print("Enter Session Date (Leave Empty for Original)")
+                                print("")
+                                while True:
+                                    date = input("Date (DD/MM/YYYY): ")
+                                    if Commands.Verification.exit_input(date):
+                                            self.dashboard_page()
+                                    if date == '':
+                                        date = None
                                         break
                                     elif Commands.Verification.validate_date(date):
                                         stripped_date = datetime.datetime.strptime(date, "%d/%m/%Y")
@@ -923,16 +1121,99 @@ class Commands():
 
                                 print("")
                                 print("")
+                                self.cursor.execute("""
+                                SELECT * FROM Users
+                                WHERE UserID = ?;
+                                """, session[3])
+                                user = self.cursor.fetchone()
+                                
+                                if user[8] == 1:
+                                    print("")
+                                    print("")
 
-                                print("Comfirm your session update")
-                                print(f"Date: {date}")
-                                print(f"Time: {time}")
-                                print(f"Group Size: {amount}")
-                                print("")
+                                    print("Input Your First Name")
+
+                                    while True:
+                                        f_name = input("First Name: ")
+                                        if Commands.Verification.exit_input(f_name):
+                                                self.dashboard_page()
+                                        if f_name == '':
+                                            f_name = session[4]
+                                            break
+                                        elif Commands.Verification.validate_name(f_name):
+                                            updates["FirstName"] = f_name 
+                                            break
+                                        print("")
+                                        print("")
+                                        print("")
+                                        print("Invalid First Name ")
+                                    
+                                    
+                                    print("")
+                                    print("")
+                                    print("")
+                                    print("Input Your Last Name")
+                                    while True:
+                                        l_name = input("Last Name: ")
+                                        if Commands.Verification.exit_input(l_name):
+                                                self.dashboard_page()
+                                        if l_name == '':
+                                            l_name = session[5]
+                                            break
+                                        elif Commands.Verification.validate_name(l_name):
+                                            updates["LastName"] = l_name 
+                                            break
+                                        print("")
+                                        print("")
+                                        print("")
+                                        print("Invalid Last Name ")
+
+                                    print("")
+                                    print("")
+
+                                    print("")
+                                
+                                    print("Input Your Phone Number e.g.(+61490767436)")
+                                    while True:
+                                        phone_number = input("Phone Number: ")
+                                        if Commands.Verification.exit_input(phone_number):
+                                                self.dashboard_page()
+                                        if phone_number == '':
+                                            phone_number = session[6]
+                                            break
+                                        if Commands.Verification.validate_phone_number(phone_number):
+                                            updates['PhoneNum'] = phone_number
+                                            break
+                                        else:
+                                            print("")
+                                            print("")
+                                            print("")
+                                            print("Invalid Phone Number ")
+
+                                    print("")
+                                    print("")
+                                    print("")
+                                    print("Comfirm your session update")
+                                    print(f"Date: {date}")
+                                    print(f"Time: {time}")
+                                    print(f"Group Size: {amount}")
+                                    print(f"First Name: {f_name}")
+                                    print(f"Last Name: {l_name}")
+                                    print(f"Phone Number: {phone_number}")
+                                    print("")
+
+                                else:
+
+                                    print("Comfirm your session update")
+                                    print(f"Date: {date}")
+                                    print(f"Time: {time}")
+                                    print(f"Group Size: {amount}")
+                                    print("")
+
                                 while True:
                                     selection = input("Confirm (yes/y) or (no/n): ")
                                     if Commands.Verification.exit_input(selection):
-                                            self.dashboard_page()
+                                        self.dashboard_page()
                                     value = Commands.Verification.validate_selection(selection)
                                     if value == True:
                                         self.update_session(session_id, updates)
@@ -943,99 +1224,6 @@ class Commands():
                                     print("")
                                     print("Invalid Selection")
 
-
-            if Commands.Verification.exit_input(user_input):
-                self.dashboard_page()
-            self.dashboard_page()
-
-
-
-
-        def admin_display_all_sessions(self):
-            try:
-                print("")
-                print("")
-                print("")
-                print("------------------------------------")
-                print("")
-                print("All Users Sessions")
-                print("Enter exit to return")
-                print("")
-                print("------------------------------------")
-                print("")
-                print("")
-                print("")
-                self.cursor.execute("""
-                SELECT * FROM Sessions
-                ORDER BY DateTime;
-                """)
-                
-                sessions = self.cursor.fetchall()
-                
-                formated_sessions = []
-                for row in sessions:
-                    self.cursor.execute("""
-                    SELECT * FROM Users
-                    WHERE UserID = ?;
-                    """, row[0])
-                    user = self.cursor.fetchone()
-                    
-                    date_time = datetime.datetime.strptime(str(row[1]), "%Y-%m-%d %H:%M:%S") 
-                    formatted_datetime = date_time.strftime("%d/%m/%Y %H:%M")
-
-
-                    if user[8] == 1:
-                        session = [row[0] ,formatted_datetime, row[2], row[4], row[5], row[6], "Yes"]
-                    else:
-                        session = [row[0], formatted_datetime, row[2], user[1], user[2], user[5], ""]
-                    
-                    formated_sessions.append(session)
-
-                print(tabulate(formated_sessions, headers=['Session ID' ,'Date & Time', 'Group Size', 'First Name', 'Last Name', 'Phone Number', 'Admin'], tablefmt='orgtbl'))
-                print("")
-                print("Enter Selection")
-                print("1. Cancel Booking")
-                print("Enter to continue")
-                
-                user_input = input("Selection: ")
-                if user_input == "1":
-                    while True:
-                        print("")
-                        print("Enter Session ID")
-                        session_id = input("Selection: ")
-                        if Commands.Verification.exit_input(session_id):
-                            self.dashboard_page()
-
-                        if session_id.isdigit():
-
-                            self.cursor.execute(
-                                """
-                                SELECT * FROM Sessions 
-                                WHERE SessionID = ?
-                            """, (session_id))
-                            session = self.cursor.fetchone()
-                            if session != [] and session != None:
-                                print("")
-                                print(f"Are you sure you want to delete session: {session_id}")
-                                while True:
-                                    selection = input("Confirm (yes/y) or (no/n): ")
-                                    if Commands.Verification.exit_input(selection):
-                                        self.dashboard_page()
-                                    value = Commands.Verification.validate_selection(selection)
-                                
-                                    if value == True:
-                                        self.remove_session(session_id)
-                                        self.dashboard_page()
-                                    elif value == False:
-                                        self.dashboard_page()
-                                    print("Invalid Selection")
-
-                            else:
-                                print(f"Session ID {session_id} dosn't exist")
-                        else:
-                            print("Must be a digit")
-                            print("")
-                
                 self.dashboard_page()
             except TypeError as e:
                 print(f"Error Occured {e}")
@@ -1065,13 +1253,54 @@ class Commands():
                 formated_sessions = []
                 for user in users:
                     if user[8] != 1:
-                        row = [user[1], user[2], user[3], user[4], user[5]]
+                        row = [user[0],user[1], user[2], user[3], user[4], user[5]]
                     
                         formated_sessions.append(row)
 
-                print(tabulate(formated_sessions, headers=['First Name', 'Last Name', 'Age', 'Email', 'Phone Number'], tablefmt='orgtbl'))
-                input("Enter to Continue: ")
-                
+                print(tabulate(formated_sessions, headers=['User ID', 'First Name', 'Last Name', 'Age', 'Email', 'Phone Number'], tablefmt='orgtbl'))
+                print("")
+                print("Enter Selection: ")
+                print("1. Delete User")
+                print("Enter to Continue")
+                print("")
+                user_input = input("Selection: ")
+                if user_input == "1":
+                    while True:
+                        print("")
+                        print("")
+                        print("Enter UserID: ")
+                        print("")
+                        user_id = input("User ID: ")
+                        if Commands.Verification.exit_input(user_id):
+                            self.dashboard_page()
+                        if user_id.isdigit():
+                            self.cursor.execute(
+                                """
+                                SELECT * FROM Users
+                                WHERE UserID = ?
+                            """, int(user_id))
+                            user = self.cursor.fetchone()
+                            if user == [] or user == None:
+                                print("UserID dosn't exist")
+                                self.dashboard_page()
+                            else:
+                                print(F"Are you sure you would like to delete UserID {user_id}")
+                                while True:
+                                    selection = input("Confirm (yes/y) or (no/n): ")
+                                    if Commands.Verification.exit_input(selection):
+                                        self.dashboard_page()
+                                    value = Commands.Verification.validate_selection(selection)
+                                    if value == True:
+                                        self.delete_user(int(user_id))
+                                        self.dashboard_page()
+                                    elif value == False:
+                                        self.dashboard_page()
+                                    print("")
+                                    print("")
+                                    print("Invalid Selection")
+                            
+
+
                 self.dashboard_page()
             except TypeError as e:
                 print(f"Error Occured {e}")
@@ -1126,6 +1355,17 @@ class Commands():
         ###
         ### SQL QUERYS
         ###
+
+        def delete_user(self, user_id):
+            try:
+                self.cursor.execute("""
+                DELETE FROM Users WHERE UserID = ?;
+                """, (user_id))
+                self.cursor.commit()
+            except:
+                print("Error")
+                self.landing_page()
+
 
         def update_session(self, session_id, updates):
             try:

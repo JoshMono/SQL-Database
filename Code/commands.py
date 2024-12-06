@@ -29,7 +29,7 @@ class Commands():
                 print("Enter exit to close")
                 print("")
                 print("1. Create Account")
-                print("")
+                print("")   
                 print("2. Login Account")
                 print("")
                 print("3. Create Admin Account")
@@ -1315,22 +1315,21 @@ class Commands():
             secret_values = Commands.SecretKeyService.get_secret()
             if secret_values != None:
 
-                print(secret_values)
-                # connection_string = (
-                #     r"Driver={ODBC Driver 17 for SQL Server};"
-                #     f"Server={secret_values['ip']};"
-                #     f"Database={str(secret_values['db'])};"
-                #     f"UID={secret_values['uid']};"
-                #     f"PWD={secret_values['pwd']};"
-                #     r"Column Encryption Settings=Enabled;"
-                # )
                 connection_string = (
                     r"Driver={ODBC Driver 17 for SQL Server};"
-                    r"Server=DESKTOP-AGJD7U8\SQLEXPRESS;"
-                    r"Database=BowlingAlleyDB;"
-                    r"Trusted_Connection=yes;"
-                    
+                    f"Server={secret_values['ip']};"
+                    f"Database={str(secret_values['db'])};"
+                    f"UID={secret_values['uid']};"
+                    f"PWD={secret_values['pwd']};"
+                    r"Column Encryption Settings=Enabled;"
                 )
+                # connection_string = (
+                #     r"Driver={ODBC Driver 17 for SQL Server};"
+                #     r"Server=DESKTOP-AGJD7U8\SQLEXPRESS;"
+                #     r"Database=BowlingAlleyDB;"
+                #     r"Trusted_Connection=yes;"
+                    
+                # )
 
                 try:
                     self.conn = pyodbc.connect(connection_string)
